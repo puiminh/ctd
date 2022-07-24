@@ -1,9 +1,12 @@
 program example;
    
 Var n : Integer;
-
+    m : Integer;
 Begin
   n:= 2;
-  n++;
+  m:= 5;
+  ++n;
   call writei(n);
+  m--;
+  call writei(m);
 End.

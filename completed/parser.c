@@ -390,6 +390,26 @@ void compileStatement(void) {
   case KW_FOR:
     compileForSt();
     break;
+  case SB_INC: //tac dung bat dau vao ++x
+    eat(SB_INC);
+    varType = compileLValue();
+    checkIntType(varType);
+    genCV();
+    genLI();
+    genLC(1);
+    genAD();
+    genST();
+  break;
+  case SB_DEC:
+    eat(SB_DEC);
+    varType = compileLValue();
+    checkIntType(varType);
+    genCV();
+    genLI();
+    genLC(1);
+    genSB ();
+    genST();
+  break;
     // EmptySt needs to check FOLLOW tokens
   case SB_SEMICOLON:
   case KW_END:
@@ -443,12 +463,37 @@ void compileAssignSt(void) {
   Type* expType;
 
   varType = compileLValue();
-  
-  eat(SB_ASSIGN);
-  expType = compileExpression();
-  checkTypeEquality(varType, expType);
+  switch (lookAhead->tokenType)
+  {
+  case SB_ASSIGN:
+    eat(SB_ASSIGN);
+    expType = compileExpression();
+    checkTypeEquality(varType, expType);
 
-  genST();
+    genST();
+    break;
+  case SB_INC: //bat x++, dau ++ sau tuong dong voi :=
+    checkIntType(varType);
+    eat(SB_INC);
+    genCV();
+    genLI();
+    genLC(1);
+    genAD();
+    genST();
+    break;
+  case SB_DEC:
+    checkIntType(varType);
+    eat(SB_DEC);
+    genCV();
+    genLI();
+    genLC(1);
+    genSB();
+    genST();
+    break;
+  default:
+    break;
+  }
+
 }
 
 void compileCallSt(void) {

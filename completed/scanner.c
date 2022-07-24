@@ -132,14 +132,24 @@ Token* getToken(void) {
   case CHAR_LETTER: return readIdentKeyword();
   case CHAR_DIGIT: return readNumber();
   case CHAR_PLUS: 
-    
-    token = makeToken(SB_PLUS, lineNo, colNo);
-    readChar(); 
+    readChar();
+    if (charCodes[currentChar]==CHAR_PLUS){
+      readChar();
+      return makeToken(SB_INC, lineNo, colNo);
+    }
+    else{
+      token = makeToken(SB_PLUS, lineNo, colNo); 
+    }
     return token;
   case CHAR_MINUS:
-    token = makeToken(SB_MINUS, lineNo, colNo);
-    readChar(); 
-    return token;
+    readChar();
+    if (charCodes[currentChar]==CHAR_MINUS){
+      readChar();
+      return makeToken(SB_DEC, lineNo, colNo);
+    }
+    else{
+      token = makeToken(SB_DEC, lineNo, colNo); 
+    }
   case CHAR_TIMES:
     token = makeToken(SB_TIMES, lineNo, colNo);
     readChar(); 
@@ -299,6 +309,8 @@ void printToken(Token *token) {
   case SB_RPAR: printf("SB_RPAR\n"); break;
   case SB_LSEL: printf("SB_LSEL\n"); break;
   case SB_RSEL: printf("SB_RSEL\n"); break;
+  case SB_DEC: printf("SB_DEC\n"); break;
+  case SB_INC: printf("SB_INC\n"); break;
   }
 }
 
