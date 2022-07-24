@@ -411,24 +411,24 @@ Type* compileLValue(void) {
   var = checkDeclaredLValueIdent(currentToken->string);
 
   switch (var->kind) {
-  case OBJ_VARIABLE:
-    genVariableAddress(var);
+  case OBJ_VARIABLE: //neu biet ve trai la bien
+    genVariableAddress(var); //dua dia chi len dau stack
 
-    if (var->varAttrs->type->typeClass == TP_ARRAY) {
+    if (var->varAttrs->type->typeClass == TP_ARRAY) { //
       varType = compileIndexes(var->varAttrs->type);
     }
     else
-      varType = var->varAttrs->type;
+      varType = var->varAttrs->type; //luu type
     break;
-  case OBJ_PARAMETER:
-    if (var->paramAttrs->kind == PARAM_VALUE)
+  case OBJ_PARAMETER: //parameter
+    if (var->paramAttrs->kind == PARAM_VALUE) //
       genParameterAddress(var);
-    else genParameterValue(var);
+    else genParameterValue(var); //day value len dau stack
 
-    varType = var->paramAttrs->type;
+    varType = var->paramAttrs->type; //lay type
     break;
-  case OBJ_FUNCTION:
-    genReturnValueAddress(var);
+  case OBJ_FUNCTION: //func
+    genReturnValueAddress(var); //day cai address tra ve f:=3 len dau stack
     varType = var->funcAttrs->returnType;
     break;
   default: 
@@ -455,19 +455,21 @@ void compileCallSt(void) {
   Object* proc;
 
   eat(KW_CALL);
-  eat(TK_IDENT);
+  eat(TK_IDENT); //de biet dang call ai
 
-  proc = checkDeclaredProcedure(currentToken->string);
+  proc = checkDeclaredProcedure(currentToken->string); //check xem cai func/prot da dc dinh nghia hay chia
 
   
-  if (isPredefinedProcedure(proc)) {
+  if (isPredefinedProcedure(proc)) { //writeI (golbal...)
     compileArguments(proc->procAttrs->paramList);
     genPredefinedProcedureCall(proc);
   } else {
-    genINT(RESERVED_WORDS);
-    compileArguments(proc->procAttrs->paramList);
-    genDCT( RESERVED_WORDS + proc->procAttrs->paramCount);
-    genProcedureCall(proc);
+    genINT(RESERVED_WORDS); // tang 4
+    compileArguments(proc->procAttrs->paramList); // xu ly tham so truyen vao
+    //cap phat truoc
+
+    genDCT( RESERVED_WORDS + proc->procAttrs->paramCount); //tru (4 + so param hien co)
+    genProcedureCall(proc); //den day moi thuc su ghi vao stack dan dan
   }
 }
 
@@ -760,11 +762,15 @@ Type* compileExpression3(Type* argType1) {
 
 Type* compileTerm(void) {
   Type* type;
-  type = compileFactor();
+  type = compileFactor0();
   type = compileTerm2(type);
 
   return type;
 }
+
+// Term2 ::= SB_TIMES Factor0 Term2
+// Term2 ::= SB_SLASH Factor0 Term2
+// Term2 ::= epsilon
 
 Type* compileTerm2(Type* argType1) {
   Type* argType2;
@@ -774,7 +780,7 @@ Type* compileTerm2(Type* argType1) {
   case SB_TIMES:
     eat(SB_TIMES);
     checkIntType(argType1);
-    argType2 = compileFactor();
+    argType2 = compileFactor0();
     checkIntType(argType2);
 
     genML();
@@ -784,7 +790,7 @@ Type* compileTerm2(Type* argType1) {
   case SB_SLASH:
     eat(SB_SLASH);
     checkIntType(argType1);
-    argType2 = compileFactor();
+    argType2 = compileFactor0();
     checkIntType(argType2);
 
     genDV();
@@ -817,27 +823,66 @@ Type* compileTerm2(Type* argType1) {
   return resultType;
 }
 
+/*
+Doi luat:
+
+Luat cu:
+
+82) Term ::= Factor Term2
+83) Term2 ::= SB_TIMES Factor Term2
+84) Term2 ::= SB_SLASH Factor Term2
+85) Term2 ::= eps
+86) Factor ::= UnsignedConstant
+87) Factor ::= Variable
+88) Factor ::= FunctionApptication
+89) Factor ::= SB_LPAR Expression SB_RPAR
+
+Luat moi
+
+Term ::= Factor0 Term2
+
+Term2 ::= SB_TIMES Factor0 Term2
+Term2 ::= SB_SLASH Factor0 Term2
+Term2 ::= epsilon
+
+Factor0 ::= Factor Factor2
+
+Factor2 ::= SB_POWER Factor Factor2
+Factor2 ::= epsilon //de bat truong hop chi co 1 so duy
+
+
+** uu tien hon *, \
+*/
+
+// them ham compileFactor0()
+Type* compileFactor0() {
+  Type* type;
+  type = compileFactor();
+  type = compileFactor2(type);
+  return type;
+}
+
 Type* compileFactor(void) {
   Type* type;
   Object* obj;
 
   switch (lookAhead->tokenType) {
-  case TK_NUMBER:
+  case TK_NUMBER: //doc dc number
     eat(TK_NUMBER);
     type = intType;
-    genLC(currentToken->value);
+    genLC(currentToken->value); //day len stack gia tri number nay
     break;
   case TK_CHAR:
     eat(TK_CHAR);
     type = charType;
-    genLC(currentToken->value);
+    genLC(currentToken->value); //day len stack gia tri number nay
     break;
   case TK_IDENT:
     eat(TK_IDENT);
-    obj = checkDeclaredIdent(currentToken->string);
+    obj = checkDeclaredIdent(currentToken->string); //quay ve check xem dinh nghia hay chia
 
     switch (obj->kind) {
-    case OBJ_CONSTANT:
+    case OBJ_CONSTANT: //neu ma const thi tuong tu
       switch (obj->constAttrs->value->type) {
       case TP_INT:
 	type = intType;
@@ -851,28 +896,28 @@ Type* compileFactor(void) {
 	break;
       }
       break;
-    case OBJ_VARIABLE:
+    case OBJ_VARIABLE: //neu ma val
       if (obj->varAttrs->type->typeClass == TP_ARRAY) {
 	genVariableAddress(obj);
 	type = compileIndexes(obj->varAttrs->type);
 	genLI();
       } else {
 	type = obj->varAttrs->type;
-	genVariableValue(obj);
+	genVariableValue(obj); //bo gia tri bien vao dau stack
       }
       break;
     case OBJ_PARAMETER:
       type = obj->paramAttrs->type;
       genParameterValue(obj);
       if (obj->paramAttrs->kind == PARAM_REFERENCE)
-	genLI();
+	genLI(); //neu day la tham bien thi load dia chi
       break;
     case OBJ_FUNCTION:
-      if (isPredefinedFunction(obj)) {
+      if (isPredefinedFunction(obj)) { //writei, readi
 	compileArguments(obj->funcAttrs->paramList);
 	genPredefinedFunctionCall(obj);
       } else {
-	genINT(4);
+	genINT(4); //cap phat... lam du thu
 	compileArguments(obj->funcAttrs->paramList);
 	genDCT(4+obj->funcAttrs->paramCount);
 	genFunctionCall(obj);
@@ -896,19 +941,65 @@ Type* compileFactor(void) {
   return type;
 }
 
-Type* compileIndexes(Type* arrayType) {
+// them ham compileFactor2()
+// Factor2 ::= SB_POWER Factor Factor2
+// Factor2 ::= epsilon
+Type* compileFactor2(Type* type1) {
+  Type *type2;
+  Type *restype;
+  switch (lookAhead->tokenType)
+  {
+  case SB_POWER:
+    eat(SB_POWER);
+    checkIntType(type1);
+    type2 = compileFactor();
+    checkIntType(type2);
+    genML();
+    restype = compileFactor2(type1);
+    break;
+  // follow set
+  case SB_TIMES:
+  case SB_SLASH:
+  case SB_PLUS:
+  case SB_MINUS:
+  case KW_TO:
+  case KW_DO:
+  case SB_RPAR:
+  case SB_COMMA:
+  case SB_EQ:
+  case SB_NEQ:
+  case SB_LE:
+  case SB_LT:
+  case SB_GE:
+  case SB_GT:
+  case SB_RSEL:
+  case SB_SEMICOLON:
+  case KW_END:
+  case KW_ELSE:
+  case KW_THEN:
+    restype = type1;
+    break;
+  default:
+    printf("Error compile factor2: ln:%d,cl: %d\n",lookAhead->lineNo, lookAhead->colNo);
+    exit(0);
+    break;
+  }
+  return restype;
+}
+
+Type* compileIndexes(Type* arrayType) { //chi so cua mang
   Type* type;
 
   
-  while (lookAhead->tokenType == SB_LSEL) {
+  while (lookAhead->tokenType == SB_LSEL) {// a[5]
     eat(SB_LSEL);
-    type = compileExpression();
+    type = compileExpression(); //lay type, day value cua expre len dau stack. 
     checkIntType(type);
     checkArrayType(arrayType);
 
-    genLC(sizeOfType(arrayType->elementType));
-    genML();
-    genAD();
+    genLC(sizeOfType(arrayType->elementType)); //vd int: 4
+    genML(); // 
+    genAD(); // cong
 
     arrayType = arrayType->elementType;
     eat(SB_RSEL);

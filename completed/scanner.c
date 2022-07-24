@@ -140,10 +140,14 @@ Token* getToken(void) {
     token = makeToken(SB_MINUS, lineNo, colNo);
     readChar(); 
     return token;
-  case CHAR_TIMES:
-    token = makeToken(SB_TIMES, lineNo, colNo);
-    readChar(); 
-    return token;
+  case CHAR_TIMES: //* -> time, ** -> pow
+    ln = lineNo;
+    cn = colNo;
+    readChar();
+    if ((currentChar != EOF) && (charCodes[currentChar] == CHAR_TIMES)) {
+      readChar();
+      return makeToken(SB_POWER, ln, cn);
+    } else return makeToken(SB_TIMES, ln, cn);
   case CHAR_SLASH:
     token = makeToken(SB_SLASH, lineNo, colNo);
     readChar(); 

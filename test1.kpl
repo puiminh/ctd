@@ -3,7 +3,7 @@ program example;
 Var n : Integer;
 
 Begin
-  n:= 2;
-  n++;
+  n:=2;
+  n:= 4/n**2;
   call writei(n);
 End.
