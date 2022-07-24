@@ -370,7 +370,6 @@ void compileStatements(void) {
 }
 
 void compileStatement(void) {
-  Type *varType;
   switch (lookAhead->tokenType) {
   case TK_IDENT:
     compileAssignSt();
@@ -438,6 +437,8 @@ Type* compileLValue(void) {
   return varType;
 }
 
+//// sua cho TH gan nhieu bien
+
 // ham nay giong het ham Lvalue nhung them tham so de tra ve Object** Var
 Type* compileMultLValue(Object **resVar) {
   Object* var;
@@ -445,73 +446,69 @@ Type* compileMultLValue(Object **resVar) {
 
   eat(TK_IDENT);
   
-  var = checkDeclaredLValueIdent(currentToken->string); //lay ident
+  var = checkDeclaredLValueIdent(currentToken->string);
 
-  switch (var->kind) { //kiem tra indent
-  case OBJ_VARIABLE: //neu la object
-    genVariableAddress(var); //khoi tao dia chi obj
+  switch (var->kind) {
+  case OBJ_VARIABLE:
+    genVariableAddress(var);
 
-    if (var->varAttrs->type->typeClass == TP_ARRAY) { //array
+    if (var->varAttrs->type->typeClass == TP_ARRAY) {
       varType = compileIndexes(var->varAttrs->type);
     }
     else
-      varType = var->varAttrs->type; //lay varType cua ident nay
+      varType = var->varAttrs->type;
     break;
-  case OBJ_PARAMETER: //neu la obj_parameter
+  case OBJ_PARAMETER:
     if (var->paramAttrs->kind == PARAM_VALUE)
-      genParameterAddress(var); //khoi tao... dia chi param
-    else genParameterValue(var); //khoi tao... gia tri
+      genParameterAddress(var);
+    else genParameterValue(var);
 
-    varType = var->paramAttrs->type; //lay varType
+    varType = var->paramAttrs->type;
     break;
-  case OBJ_FUNCTION: //neu la func
-    genReturnValueAddress(var); //khoi tao... dia chi tra ve
-    varType = var->funcAttrs->returnType; //lay varType tra ve
+  case OBJ_FUNCTION:
+    genReturnValueAddress(var);
+    varType = var->funcAttrs->returnType;
     break;
   default: 
     error(ERR_INVALID_LVALUE,currentToken->lineNo, currentToken->colNo);
   }
-  *resVar = var; //bo var vao mang
-  return varType; //tra ve varType
+  *resVar = var;
+  return varType;
 }
 
 void compileAssignSt(void) {
   Type* varType[15];
   Type* expType[15];
-  Object* varList[15]; //tao list object
+  Object* varList[15];
 
   int varNum = 0, expNum = 0;
   int level, offset;
   varType[varNum] = compileMultLValue(&varList[varNum]);
   varNum++;
-
-  while (lookAhead->tokenType != SB_ASSIGN) //trong khi van chua thay dau bang
+  
+  while (lookAhead->tokenType != SB_ASSIGN)
   {
     eat(SB_COMMA);
-    varType[varNum] = compileMultLValue(&varList[varNum]); //cho vao mang tung type
+    varType[varNum] = compileMultLValue(&varList[varNum]);
     varNum++;
   }
-  
-  eat(SB_ASSIGN); //sau khi an dau bang, den voi dau day ben kia
+
+  eat(SB_ASSIGN);
 
   level = computeNestedLevel(VARIABLE_SCOPE(varList[expNum]));
-  //lay level cua [0]
   offset = VARIABLE_OFFSET(varList[expNum]);
-  //lay offset cua [0]
-  genLA(level, offset); //load address
+  genLA(level, offset);
 
-  expType[expNum] = compileExpression(); //cho vao mang type sau khi compile cai kia, sau khi compile thi value no se day vao dau stack
-  expNum++; //tang expNum
+  expType[expNum] = compileExpression();
+  expNum++;
 
-  while (lookAhead->tokenType == SB_COMMA) //vao vong lap
+  while (lookAhead->tokenType == SB_COMMA)
   {
-    if(expNum == varNum) { //neu chua gi da bang nhau -> cai nay thua roi
+    if(expNum == varNum) {
         printf("Ln %d, Cl: %d: Var number and expression number not equal",currentToken->lineNo, currentToken->colNo);
         exit(0);
     }
     eat(SB_COMMA);
-
-    //thuc hien tuong tu
     level = computeNestedLevel(VARIABLE_SCOPE(varList[expNum]));
     offset = VARIABLE_OFFSET(varList[expNum]);
     genLA(level, offset);
@@ -519,7 +516,7 @@ void compileAssignSt(void) {
     expNum++;
   }
 
-  // checkTypeEquality cua hai mang(varType, expType);
+  // checkTypeEquality(varType, expType);
 
   for (int i = 0; i < varNum; i++)
   {
@@ -528,10 +525,10 @@ void compileAssignSt(void) {
 
   for (int i = 0; i < varNum; i++)
   {
-      genST(); //lenh store lien tuc se dung vi hien tai no cung dang day vao stack lan luot: diachi value
+      genST();
   }
   
-  genDCT(varNum-1); //bo di luong o nho nay
+  genDCT(varNum-1);
 }
 
 void compileCallSt(void) {
@@ -858,6 +855,7 @@ Type* compileTerm2(Type* argType1) {
     eat(SB_TIMES);
     checkIntType(argType1);
     argType2 = compileFactor();
+    // printf("%d\n",argType2->typeClass);
     checkIntType(argType2);
 
     genML();

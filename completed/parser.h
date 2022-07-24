@@ -54,6 +54,8 @@ Type* compileTerm2(Type* argType2);
 Type* compileFactor(void);
 Type* compileIndexes(Type* arrayType);
 
+Type* compileMultLValue(Object **resVar);
+
 int compile(char *fileName);
 
 #endif

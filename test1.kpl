@@ -1,9 +1,10 @@
 program example;
    
 Var n : Integer;
+    m : Integer;
 
 Begin
-  n:= 2;
-  n++;
+  n, m := 2, 3;
   call writei(n);
+  call writei(m);
 End.
