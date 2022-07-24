@@ -1,0 +1,9 @@
+program example;
+   
+Var n : Integer;
+
+Begin
+  n:= 2;
+  n++;
+  call writei(n);
+End.

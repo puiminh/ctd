@@ -1,0 +1,18 @@
+program max;
+var	x: integer;
+	y: integer;
+	z: integer;
+function findMax(a: integer; b: integer; c: integer) : integer;
+	var temp: integer;
+	begin
+		temp:= a;
+		if b > temp then temp:= b;
+		if c > temp then temp:= c;
+		findMax:=temp;
+	end;
+begin
+	x:= readi;
+	y:= readi;
+	z:= readi;
+	call writei(findMax(x,y,z));
+end.

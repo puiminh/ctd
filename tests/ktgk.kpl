@@ -1,0 +1,14 @@
+program chuyenDoi;
+var	diemSo: integer;
+function diemChu(a: integer) : char;
+	begin
+		if a >= 0 then diemChu:= 'F';
+		if a >= 4 then diemChu:= 'D';
+		if a = 6 then diemChu:= 'C';
+		if a >= 7 then diemChu:= 'B';
+		if a >= 9 then diemChu:= 'A';
+	end;
+begin
+	diemSo:= readi;
+	call writec(diemChu(diemSo));
+end.

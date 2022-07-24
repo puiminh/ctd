@@ -1,0 +1,12 @@
+program dethi;
+var	y: integer;
+	x: integer;
+function sum(x:integer; y:integer) : integer;
+begin
+   sum := x + y;
+end;
+begin
+	y:=readi;
+	x:=readi;
+	call writei(sum(2,3));
+end.
