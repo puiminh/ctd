@@ -441,12 +441,84 @@ Type* compileLValue(void) {
 void compileAssignSt(void) {
   Type* varType;
   Type* expType;
-
-  varType = compileLValue();
+  Type *conExpType;
+  Type *returnType1, *returnType2;
+  TokenType op;
+  Instruction *fjInstruction, *jInstruction;
+  // a = 5>=2?1:2
+  varType = compileLValue(); //lay dia chi ve trai - (a)
   
   eat(SB_ASSIGN);
-  expType = compileExpression();
-  checkTypeEquality(varType, expType);
+  expType = compileExpression(); //xu ly gia tri ve phai 1, tra ve type. - 5, int
+  
+    op = lookAhead->tokenType; //cho xem token hien tai
+  if(lookAhead->tokenType == SB_EQ || lookAhead->tokenType == SB_NEQ || lookAhead->tokenType == SB_LE || lookAhead->tokenType == SB_LT
+      || lookAhead->tokenType == SB_GE || lookAhead->tokenType == SB_GT) { //neu no la dau =, !=,  >, <, >=, <= (dieu kien)
+    switch (op)
+    {
+    case SB_EQ:
+      eat(SB_EQ);
+      break;
+    case SB_NEQ:
+      eat(SB_NEQ);
+      break;
+    case SB_LE:
+      eat(SB_LE);
+      break;
+    case SB_LT:
+      eat(SB_LT);
+      break;
+    case SB_GE:
+      eat(SB_GE);
+      break;
+    case SB_GT:
+      eat(SB_GT);
+      break;
+    default:
+      break;
+    } //an dau
+    
+    conExpType = compileExpression(); //lay value va type cua ve tiep theo, 2, int
+    checkTypeEquality(expType, conExpType); //check type
+
+    switch (op)
+    {
+    case SB_EQ:
+      genEQ(); //so sanh va tra lai 0 hoac 1
+      break;
+    case SB_NEQ:
+      genNE();
+      break;
+    case SB_LE:
+      genLE();
+      break;
+    case SB_LT:
+      genLT();
+      break;
+    case SB_GE:
+      genGE();
+      break;
+    case SB_GT:
+      genGT();
+      break;
+    default:
+      break;
+    } //an dau
+
+    fjInstruction = genFJ(DC_VALUE); //khoi tao false jump
+    eat(SB_QUESTION); //dau hoi
+    returnType1 = compileExpression(); //lay gia tri va type 1 - 1
+    // genST();
+    eat(SB_COLON); //dau :
+    jInstruction = genJ(DC_VALUE); //khoi tao jump
+    updateFJ(fjInstruction, getCurrentCodeAddress()); //cho FJ chi vao day
+    returnType2 = compileExpression(); //lay gia tri va type 2 - 2
+    checkTypeEquality(returnType1, returnType2);
+    checkTypeEquality(returnType1, varType);
+    updateJ(jInstruction, getCurrentCodeAddress()); //cho Jump chi vao day
+  } else 
+
+  checkTypeEquality(varType, expType); //neu khong co nhung thu do thi gan binh thuong
 
   genST();
 }
@@ -739,6 +811,7 @@ Type* compileExpression3(Type* argType1) {
   case KW_DO:
   case SB_RPAR:
   case SB_COMMA:
+  case SB_COLON:
   case SB_EQ:
   case SB_NEQ:
   case SB_LE:
@@ -746,6 +819,7 @@ Type* compileExpression3(Type* argType1) {
   case SB_GE:
   case SB_GT:
   case SB_RSEL:
+  case SB_QUESTION:
   case SB_SEMICOLON:
   case KW_END:
   case KW_ELSE:
@@ -809,6 +883,8 @@ Type* compileTerm2(Type* argType1) {
   case KW_END:
   case KW_ELSE:
   case KW_THEN:
+  case SB_QUESTION:
+  case SB_COLON:
     resultType = argType1;
     break;
   default:

@@ -168,13 +168,13 @@ Token* getToken(void) {
     token = makeToken(SB_EQ, lineNo, colNo);
     readChar(); 
     return token;
-  case CHAR_EXCLAIMATION:
+  case CHAR_EXCLAIMATION: //!
     ln = lineNo;
     cn = colNo;
     readChar();
-    if ((currentChar != EOF) && (charCodes[currentChar] == CHAR_EQ)) {
+    if ((currentChar != EOF) && (charCodes[currentChar] == CHAR_EQ)) {//=
       readChar();
-      return makeToken(SB_NEQ, ln, cn);
+      return makeToken(SB_NEQ, ln, cn);//!=
     } else {
       token = makeToken(TK_NONE, ln, cn);
       error(ERR_INVALID_SYMBOL, ln, cn);
@@ -227,6 +227,10 @@ Token* getToken(void) {
   case CHAR_RPAR:
     token = makeToken(SB_RPAR, lineNo, colNo);
     readChar(); 
+    return token;
+  case CHAR_QUESTION:
+    token = makeToken(SB_QUESTION, lineNo, colNo);
+    readChar();
     return token;
   default:
     token = makeToken(TK_NONE, lineNo, colNo);
@@ -299,6 +303,7 @@ void printToken(Token *token) {
   case SB_RPAR: printf("SB_RPAR\n"); break;
   case SB_LSEL: printf("SB_LSEL\n"); break;
   case SB_RSEL: printf("SB_RSEL\n"); break;
+  case SB_QUESTION: printf("SB_QUESTION\n"); break; //in ra
   }
 }
 

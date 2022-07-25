@@ -3,7 +3,29 @@ program example;
 Var n : Integer;
 
 Begin
-  n:= 2;
-  n++;
+  n:=2>3?5:6;
   call writei(n);
 End.
+
+(*  n:=2>3?5:6;  
+gia su 2>3 la rong, n:=  :
+  *)
+
+(*
+Assignt ::= expression
+Assignt ::= condition ? expression : expression //phai so sanh type kha met  
+  
+75) Expression ::= SB_PLUS Expression2
+76) Expression ::= SB_MINUS Expression2
+77) Expression ::= Expression2
+78) Expression2 ::= Term Expression3
+79) Expression3 ::= SB_PLUS Term Expression3
+80) Expression3 ::= SB_MINUS Term Expression3
+81) Expression3 ::= e
+
+82) Term ::= Factor Term2
+83) Term2 ::= SB_TIMES Factor Term2
+84) Term2 ::= SB_SLASH Factor Term2
+85) Term2 ::=e
+
+*)
